@@ -9,11 +9,13 @@ See the usage with the --help option
 from docopt import docopt
 import logging
 from logging.handlers import RotatingFileHandler
-from fipogen.server.server import start
+from pkg_resources import resource_filename, Requirement
+
+from fixif.webserver.server import start
 
 
 usage = """
-FiPoGen
+FiXiF
 Run the web server
 
 Usage:
@@ -24,10 +26,11 @@ Options:
   -h --help                    Show this screen.
   -p PORT --port=PORT          web server port [default: 8080].
   -H HOST --host=HOST          Server host [default: localhost].
-  -C PATH --cache=PATH         Cache path [default: cache/]
-  -G PATH --generated=PATH     Generated files path [default: ../generated/LaTeX/] 
+  -C PATH --cache=PATH         Cache path [default: %s]
+  -G PATH --generated=PATH     Generated files path [default: %s] 
   --debug                      Debug mode (clear caches, log and display everything)
-"""
+""" % (resource_filename('fixif.webserver', 'cache/'),
+       resource_filename('fixif.webserver', 'generated/'))
 
 
 if __name__ == "__main__":
@@ -51,7 +54,7 @@ if __name__ == "__main__":
 	# Start !
 	logger.info("")
 	logger.info("#============================#")
-	logger.info("# running FiPoGen web server #")
+	logger.info("# running FiPXiF web server #")
 	logger.info("#============================#")
 	logger.info("")
 	start(args['--host'], args['--port'], debug, args['--cache'], args['--generated'])
