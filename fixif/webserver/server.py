@@ -12,14 +12,14 @@ from bottle import Jinja2Template, TEMPLATE_PATH
 from bottle import install, default_app
 
 # FiPoGen packages
-from fipogen.FxP import FPF
-from fipogen.FxP import Variable
-from fipogen.FxP import Constant
+from fixif.FxP import FPF
+#from fixif.FxP import Variable
+from fixif.FxP import Constant
 
 # utilities and path definition
-from fipogen.server.utilities import createImageFromLaTeX, optionManager, colorThemes, clean_caches, imageFormats
-from fipogen.server.path import Config  # paths
-from fipogen.server.utilities import return_dictionary_constant, evaluate_exp, get_interval_inf, is_sollya_installed
+from fixif.webserver.utilities import createImageFromLaTeX, optionManager, colorThemes, clean_caches, imageFormats
+from fixif.webserver.path import Config  # paths
+from fixif.webserver.utilities import return_dictionary_constant, evaluate_exp, get_interval_inf, is_sollya_installed
 
 from operator import attrgetter
 from functools import wraps  # use to wrap a logger for bottle
@@ -33,8 +33,7 @@ import hashlib
 
 # weblogger
 weblogger = getLogger('bottle')
-# Path to the template
-TEMPLATE_PATH[:] = ['templates/']
+
 
 # TODO: delete the following lines
 # regexs
@@ -497,6 +496,15 @@ def start(host, port, debug, cache, generated):
 	Config.cache = cache
 	Config.generated = generated
 	Config.baseURL = 'http://%s:%s/' % (host, port)
+	TEMPLATE_PATH[:] = [Config.templates]
+
+	# log the paths
+	weblogger.debug("Paths values:")
+	weblogger.debug("templates=" + Config.templates)
+	weblogger.debug("views=" + Config.views)
+	weblogger.debug("generated=" + Config.generated)
+	weblogger.debug("cache=" + Config.cache)
+
 
 	# clean caches in Debug mode
 	if debug:

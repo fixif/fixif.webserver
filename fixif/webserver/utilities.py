@@ -8,7 +8,7 @@ from os.path import exists
 from subprocess import Popen, PIPE
 from bottle import static_file
 
-from fipogen.server.path import Config
+from fixif.webserver.path import Config
 
 from mpmath import nstr
 
