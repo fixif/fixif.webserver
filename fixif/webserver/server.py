@@ -15,6 +15,7 @@ from bottle import install, default_app
 from fixif.FxP import FPF
 #from fixif.FxP import Variable
 from fixif.FxP import Constant
+from fixif.SoP import FxPSoP
 
 # utilities and path definition
 from fixif.webserver.utilities import createImageFromLaTeX, optionManager, colorThemes, clean_caches, imageFormats
@@ -331,26 +332,10 @@ def Sum_service(outputFormat):
 	options.addOptionalOption("hatches", {"yes": True, "no": False}, "no")  # display hatches for the bits outside the FPF of the result
 	options.addOptionalOption("xshift", lambda x: float(x), '0')
 	options.addOptionalOption("yshift", lambda x: float(x), '0')
-	# sorting the FPF
-	if options["sort"] == 'msb':
-		F.sort(key=attrgetter('msb'), reverse=True)
-	elif options["sort"] == 'lsb':
-		F.sort(key=attrgetter('lsb'))
-	# generate LaTeX code for the FPFs
-	latexFPF = "\n".join([f.LaTeX(x_shift=options["xshift"], y_origin=-i * 1.3 + options["yshift"], colors=options["colors"], hatches=((resultFPF.msb, resultFPF.lsb) if options["hatches"] else None)) for i, f in enumerate(F)])
-	latexFPF += "\n\t%result\n" + resultFPF.LaTeX(x_shift=options["xshift"],
-	                                              y_origin=-len(F) * 1.3 - 0.3 + options["yshift"],
-	                                              colors=options["colors"]
-	                                              )
-	minlsb = min(f.lsb for f in F + [resultFPF])
-	maxmsb = max(f.msb for f in F + [resultFPF])
-	latexFPF += "\n\t\\draw (%f,%f) -- (%f,%f) [color=black,line width=1pt];" % (
-		-maxmsb - 1.2 + options["xshift"], -len(F) * 1.3 + 1 + options["yshift"], -minlsb + 0.2 + options["xshift"],
-		-len(F) * 1.3 + 1 + options["yshift"])
-	if options["axis"]:
-		latexFPF += "\n\n\t\\draw (%f,%f) -- (%f,%f) [color=red];" % (
-			options["xshift"], 1.2 + options["yshift"], options["xshift"], -len(F) * 1.3 - 0.5 + options["yshift"])
-
+	# build the LaTeX from the FxP SoP (fake SoP with constant equal to 1 and variable with msb decreased by 1)
+	sop = FxPSoP([Constant(1, wl=2) for _ in F], ["" for _ in F], [FPF(msb=f.msb-1, lsb=f.lsb) for f in F], ["" for _ in F], resultFPF)
+	latexFPF = sop.sumLaTeX(**options.getValues())
+	# generate the files
 	sumName = "-".join([f.Qnotation() for f in F + [resultFPF]])
 	if outputFormat != 'tex':
 		# prepare the conversion argument (in the LaTeX class 'standalone')
